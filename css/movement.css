@@ -1,0 +1,32 @@
+.gmi-dbtngroup {
+    width: 240px;
+    height: auto;
+    margin: 16px auto;
+}
+
+.gmi-dbtn {
+    width: 80px;
+    height: 80px;
+    border-radius: 100%;
+    color: white;
+    background-color: rgb(54, 54, 93);
+    background-color: black;
+    background: linear-gradient(135deg, black, rgb(54, 54, 93), black)
+}
+
+.gmi-dbtn:focus {
+    outline: none;
+}
+
+.gmi-dbtn--up, .gmi-dbtn--down {
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+.gmi-dbtn--left {
+    margin-right: 40px;
+}
+
+.gmi-dbtn--right {
+    margin-left: 40px;
+}

@@ -1,0 +1,28 @@
+.gmi-hint--score::before {
+    font-weight: lighter;
+}
+
+.gmi-hint--score {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 16px;
+    font-weight: bolder;
+    margin-right: 16px;
+    color: rgb(165, 12, 71);
+}
+
+.gmi-hint--currentscore::before {
+    content: "Current Score: ";
+}
+
+.gmi-hint--highscore::before {
+    content: "Highest Score: ";
+}
+
+.gmi-hint--highscore {
+    /* background: black; */
+    color: black;
+}
+
+.gmi-hint--help {
+    font-size: 12px;
+}

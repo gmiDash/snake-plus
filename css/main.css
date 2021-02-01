@@ -1,0 +1,26 @@
+@import 'hud.css';
+@import 'movement.css';
+body {
+    overflow: hidden;
+    margin: 0;
+    background: grey;
+}
+
+main {
+    max-width: 388px;
+    max-width: 320px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 8px;
+    background: lightgray;
+}
+
+.gmi-canvas {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 386px;
+    margin: 0 auto 8px;
+    border: 1px solid #888;
+    background: greenyellow;
+}
