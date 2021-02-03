@@ -9,9 +9,9 @@ class Randomizer {
         this.minX = minX;
         this.minY = minY;
     }
-
     getRandomValue = (maxValue, minValue, stepSize = this.stepSize) => {
-        return (~~((Math.random() * (maxValue - minValue - stepSize)) / stepSize) * stepSize) + minValue;
+        // get randomValue between minValue and maxValue with specific stepSize and no decimals
+        return (Math.floor((Math.random() * (maxValue - minValue - stepSize)) / stepSize) * stepSize) + minValue;
     }
     getRandomPosition = (excludedPositions = []) => {
         let includesRandomPosition;

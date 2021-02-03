@@ -8,7 +8,9 @@ const setStorageHighestScore = (currentScore = null) => {
         //console.log("score storage:", highestScore, "current score:", currentScore);
         highestScore = currentScore;
         localStorage.setItem("gmi-snakeGameHighestScore", highestScore);
-    } else if (!highestScore) highestScore = "-"
+    } else if (!highestScore) {
+        highestScore = "-";
+    }
     return highestScore;
 }
 

@@ -3,13 +3,21 @@
 import dom from "./dom.js";
 
 class Movement {
-    constructor(lockMove = false) {
-        // properties
-        this.lockMove = lockMove;
+    constructor() {
         this.x = 0;
         this.y = 0;
+    }
+}
 
-        // event listeners
+class MovementKeyboard extends Movement {
+    constructor(lockMove = false, movement = { x: 0, y: 0 }) {
+        super();
+        this.x = movement.x;
+        this.y = movement.y;
+        this.lockMove = lockMove;
+        this.registerEventListeners();
+    }
+    registerEventListeners = () => {
         window.addEventListener("keydown", this.handleMovementStart);
         if (!this.lockMove) window.addEventListener("keyup", this.handleMovementStop);
     }
@@ -60,49 +68,39 @@ class Movement {
     }
 }
 
-class MovementButtons {
-    constructor(movement) {
-        // properties
+class MovementButtons extends Movement {
+    constructor(movement = { x: 0, y: 0 }) {
+        super();
+        this.x = movement.x;
+        this.y = movement.y;
         this.movement = movement;
-        this.dbtnGroup = this.createDirectionalButtons();
+        this.group = this.createDirectionalButtons();
     }
     createDirectionalButtons = () => {
         // create directional buttons
-        const dbtnGroup = dom.createDOMElement({
+        const buttonGroup = dom.createDOMElement({
             type: "div",
             classNames: ["gmi-dbtngroup"],
-            parent: false,
+            parent: false
         });
-        dom.createDOMElement({
-            type: "button",
-            classNames: ["gmi-dbtn", "gmi-dbtn--up"],
-            parent: dbtnGroup,
-            content: "▲",
-            events: { "pointerover": () => this.setMovement("up") }
-        });
-        dom.createDOMElement({
-            type: "button",
-            classNames: ["gmi-dbtn", "gmi-dbtn--left"],
-            parent: dbtnGroup,
-            content: "◄",
-            events: { "pointerover": () => this.setMovement("left") }
-        });
-        dom.createDOMElement({
-            type: "button",
-            classNames: ["gmi-dbtn", "gmi-dbtn--right"],
-            parent: dbtnGroup,
-            content: "►",
-            events: { "pointerover": () => this.setMovement("right") }
-        });
-        dom.createDOMElement({
-            type: "button",
-            classNames: ["gmi-dbtn", "gmi-dbtn--down"],
-            parent: dbtnGroup,
-            content: "▼",
-            events: { "pointerover": () => this.setMovement("down") }
-        });
+        const buttons = [
+            { direction: "up", content: "▲" },
+            { direction: "left", content: "◄" },
+            { direction: "right", content: "►" },
+            { direction: "down", content: "▼" }
+        ]
+        buttons.forEach((button) => this.createButtonDOMElement(button, buttonGroup));
 
-        return dbtnGroup;
+        return buttonGroup;
+    }
+    createButtonDOMElement = ({ direction, content }, buttonGroup) => {
+        dom.createDOMElement({
+            type: "button",
+            classNames: ["gmi-dbtn", "gmi-dbtn--" + direction],
+            parent: buttonGroup,
+            content: content,
+            events: { "click": () => this.setMovement(direction) }
+        });
     }
     setMovement = direction => {
         switch (direction) {
@@ -127,5 +125,5 @@ class MovementButtons {
     }
 }
 
-export default Movement;
-export { MovementButtons };
+//export default Movement;
+export { Movement, MovementKeyboard, MovementButtons };

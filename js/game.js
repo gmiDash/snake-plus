@@ -2,7 +2,7 @@
 
 import { createCanvasWithContext } from "./modules/canvas.js";
 import HUD from "./modules/Hud.js";
-import Movement, { MovementButtons } from "./modules/Movement.js";
+import { MovementKeyboard, MovementButtons } from "./modules/Movement.js";
 import Randomizer from "./modules/Randomizer.js";
 import { setStorageHighestScore } from "./modules/storage.js";
 import Snake from "./modules/Snake.js";
@@ -29,12 +29,10 @@ let gamePaused = false;
 const [playgroundCanvas, ctx] = createCanvasWithContext(config.canvas, mainTag);
 // create HUD
 const hud = new HUD(mainTag, config.frameRate);
-let snakeElements = [{ x: 0, y: 0 }];
-let xPos = 0, yPos = 0;
-let dotFoodPos = [{ x: 0, y: 0 }];
+let xPos, yPos, snakeElements, dotFoodPos;
 
 // get movement (keyboard input and buttons) and set snake movement
-const movement = new Movement(true);
+const movement = new MovementKeyboard(true);
 const movementButtons = new MovementButtons(movement);
 const snakeMovement = {
     x: 0,
@@ -57,7 +55,8 @@ const initSettings = () => {
     // get start position
     const startPosition = config.startPos; //getRandomPosition() ???
     // map x and y start position
-    xPos = startPosition.x, yPos = startPosition.y;
+    xPos = startPosition.x;
+    yPos = startPosition.y;
 
     // movements stop
     movement.x = 0;
@@ -79,7 +78,7 @@ const initSettings = () => {
 const init = () => {
 
     // insert movement buttons
-    mainTag.appendChild(movementButtons.dbtnGroup);
+    mainTag.appendChild(movementButtons.group);
 
     initSettings();
 
@@ -97,9 +96,7 @@ const init = () => {
             ctx.font = "bold 24px Franklin Gothic Medium";
             ctx.textAlign = "center";
             ctx.fillText("GAME PAUSED", config.canvas.x / 2, config.canvas.y / 2);
-        }
-
-        if (!gamePaused) {
+        } else {
 
             // block movement changes on current movement axis
             if (snakeMovement.x === 0 && movement.x !== 0) {
@@ -175,13 +172,21 @@ const init = () => {
     // event listeners "pause game"
     window.addEventListener("keydown", (event) => {
         if (event.key === "p") {
-            if (!gamePaused) gamePaused = true;
-            else gamePaused = false;
+            if (gamePaused) {
+                gamePaused = false;
+            } else {
+                gamePaused = true;
+            }
+            //gamePaused = !gamePaused;
         }
     })
     playgroundCanvas.addEventListener("click", () => {
-        if (!gamePaused) gamePaused = true;
-        else gamePaused = false;
+        if (gamePaused) {
+            gamePaused = false;
+        } else {
+            gamePaused = true;
+        }
+        //gamePaused = !gamePaused;
     })
 }
 
