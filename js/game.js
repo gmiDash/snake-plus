@@ -1,6 +1,7 @@
 "use strict";
 
 import { createCanvasWithContext } from "./modules/canvas.js";
+import { detectCollision } from "./modules/collision.js";
 import HUD from "./modules/Hud.js";
 import { MovementKeyboard, MovementButtons } from "./modules/Movement.js";
 import Randomizer from "./modules/Randomizer.js";
@@ -19,7 +20,26 @@ const config = {
         x: 128,
         y: 160
     },
-    snakeLength: 4
+    snakeLength: 4,
+    autoTurn: true,
+    cpuSnakesActive: false,
+    cpuSnakes: [
+        {
+            startPos: {
+                x: 224,
+                y: 320
+            },
+            length: 6
+        },
+        {
+            startPos: {
+                x: 320,
+                y: 288
+            },
+            length: 2
+        },
+    ]
+
 }
 
 const mainTag = document.querySelector("main");
@@ -29,11 +49,17 @@ let gamePaused = false;
 const [playgroundCanvas, ctx] = createCanvasWithContext(config.canvas, mainTag);
 // create HUD
 const hud = new HUD(mainTag, config.frameRate);
-let xPos, yPos, snakeElements, dotFoodPos;
+
+let position, snakeElements, dotFoodPos;
+let cpuSnakes = [];
 
 // get movement (keyboard input and buttons) and set snake movement
-const movement = new MovementKeyboard(true);
+const movementKeyboard = new MovementKeyboard();
+// movement object stores current movement
+const movement = movementKeyboard.movement;
+// transfer movement object for same reference
 const movementButtons = new MovementButtons(movement);
+
 const snakeMovement = {
     x: 0,
     y: 0,
@@ -52,11 +78,8 @@ const initSettings = () => {
     // load highest score from local storage (if available) and write to HUD
     hud.setHighestScore(setStorageHighestScore());
 
-    // get start position
-    const startPosition = config.startPos; //getRandomPosition() ???
-    // map x and y start position
-    xPos = startPosition.x;
-    yPos = startPosition.y;
+    // get start position, spread to overwrite last position in case of "game over"
+    position = { ...config.startPos }; //getRandomPosition() ???
 
     // movements stop
     movement.x = 0;
@@ -71,8 +94,25 @@ const initSettings = () => {
         config.pixelSize
     ).elements;
 
+    // clean "CPU" snakes
+    cpuSnakes = [];
+
+    // create "CPU" snakes (if activated) 
+    if (config.cpuSnakesActive) {
+        config.cpuSnakes.forEach(snake => {
+            cpuSnakes.push(
+                new Snake(
+                    snake.startPos,
+                    snake.length,
+                    config.pixelSize
+                ).elements
+            )
+        })
+    }
+
     // get random "food" position
-    dotFoodPos = foodPosRandomizerStart.getRandomPosition(snakeElements);
+    dotFoodPos = foodPosRandomizerStart.getRandomPosition(snakeElements.concat(...cpuSnakes));
+
 }
 
 const init = () => {
@@ -106,53 +146,37 @@ const init = () => {
                 snakeMovement.x = 0;
                 snakeMovement.y = movement.y * snakeMovement.speed;
             }
-            /* snakeMovement.x = movement.x * snakeMovement.speed;
-            snakeMovement.y = movement.y * snakeMovement.speed; */
-            xPos += snakeMovement.x;
-            yPos += snakeMovement.y;
+            position.x += snakeMovement.x;
+            position.y += snakeMovement.y;
 
-            // check collision
-            {
-                // check collision with snake elements - exclude head (last element in array)
-                let snakeBite = false;
-                for (let i = 0; i < snakeElements.length - 1; i++) {
-                    if (snakeElements[i].x === xPos && snakeElements[i].y === yPos) {
-                        snakeBite = true;
-                        break;
-                    }
-                }
-                // check collision with canvas edges and change movement
-                if (xPos < 0) {
-                    xPos = 0;
-                    movement.x = 0;
-                    movement.y = 1;
-                } else if (xPos > config.canvas.x - config.pixelSize) {
-                    xPos = config.canvas.x - config.pixelSize;
-                    movement.x = 0;
-                    movement.y = 1;
-                } else if (yPos < 0) {
-                    yPos = 0;
-                    movement.x = 1;
-                    movement.y = 0;
-                } else if (yPos > config.canvas.y - config.pixelSize) {
-                    yPos = config.canvas.y - config.pixelSize;
-                    movement.x = 1;
-                    movement.y = 0;
-                } else if (snakeBite) {
-                    setStorageHighestScore(snakeElements.length - config.snakeLength);
+            // check collision or snakeBite
+            const [snakeBite, snakeBiteOther] = detectCollision({
+                snakeElements: snakeElements,
+                position: position,
+                movement: movement,
+                xMax: config.canvas.x - config.pixelSize,
+                yMax: config.canvas.y - config.pixelSize,
+                otherSnakes: cpuSnakes,
+                automaticTurn: config.autoTurn
+            });
+
+            if (snakeBite || snakeBiteOther) {
+                setStorageHighestScore(snakeElements.length - config.snakeLength);
+                if (snakeBite) {
                     alert(`GAME OVER - DON'T BITE YOURSELF – Score: ${snakeElements.length - config.snakeLength}`);
-                    initSettings();
+                } else if (snakeBiteOther) {
+                    alert(`GAME OVER - WATCH OUT FOR OTHER SNAKES – Score: ${snakeElements.length - config.snakeLength}`);
                 }
+                initSettings();
             }
 
             if (snakeMovement.x || snakeMovement.y) {
+                snakeElements.push({ x: position.x, y: position.y });
                 // check collision with food
-                if (xPos === dotFoodPos.x && yPos === dotFoodPos.y) {
-                    snakeElements.push({ x: xPos, y: yPos });
+                if (position.x === dotFoodPos.x && position.y === dotFoodPos.y) {
                     // new "food"
                     dotFoodPos = randomizer.getRandomPosition(snakeElements);
                 } else {
-                    snakeElements.push({ x: xPos, y: yPos });
                     // delete last snake part
                     snakeElements.shift();
                 }
@@ -162,6 +186,17 @@ const init = () => {
             snakeElements.forEach(
                 (el) => ctx.fillRect(el.x, el.y, config.pixelSize, config.pixelSize)
             );
+
+            if (config.cpuSnakesActive) {
+                // draw cpuSnake
+                cpuSnakes.forEach(snake => {
+                    snake.forEach(
+                        el => ctx.fillRect(el.x, el.y, config.pixelSize, config.pixelSize)
+                    )
+                }
+                );
+            }
+
             // draw "food"
             ctx.fillRect(dotFoodPos.x, dotFoodPos.y, config.pixelSize, config.pixelSize);
 
@@ -192,12 +227,3 @@ const init = () => {
 
 // init
 init();
-
-
-
-
-
-
-
-
-

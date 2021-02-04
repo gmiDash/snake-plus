@@ -23,15 +23,16 @@ class Randomizer {
                 y: this.getRandomValue(this.maxY, this.minY)
             };
             if (excludedPositions.length) {
-                for (let i = 0; i < excludedPositions.length; i++) {
-                    if (excludedPositions[i].x === randomPosition.x) {
-                        if (excludedPositions[i].y === randomPosition.y) {
+                excludedPositions.forEach(position => {
+                    if (position.x === randomPosition.x) {
+                        if (position.y === randomPosition.y) {
                             includesRandomPosition = true;
                         }
                     }
-                }
+                })
             }
         } while (includesRandomPosition)
+
         return randomPosition;
     }
 

@@ -4,44 +4,44 @@ import dom from "./dom.js";
 
 class Movement {
     constructor() {
-        this.x = 0;
-        this.y = 0;
+        this.movement = { x: 0, y: 0 }
     }
 }
 
 class MovementKeyboard extends Movement {
     constructor(lockMove = false, movement = { x: 0, y: 0 }) {
         super();
-        this.x = movement.x;
-        this.y = movement.y;
+        this.movement = movement
         this.lockMove = lockMove;
         this.registerEventListeners();
     }
     registerEventListeners = () => {
         window.addEventListener("keydown", this.handleMovementStart);
-        if (!this.lockMove) window.addEventListener("keyup", this.handleMovementStop);
+        if (!this.lockMove) {
+            window.addEventListener("keyup", this.handleMovementStop);
+        }
     }
     handleMovementStart = event => {
         switch (event.key) {
             case "a":
             case "ArrowLeft":
-                this.x = -1;
-                this.y = 0;
+                this.movement.x = -1;
+                this.movement.y = 0;
                 break;
             case "d":
             case "ArrowRight":
-                this.x = 1;
-                this.y = 0;
+                this.movement.x = 1;
+                this.movement.y = 0;
                 break;
             case "w":
             case "ArrowUp":
-                this.x = 0;
-                this.y = -1;
+                this.movement.x = 0;
+                this.movement.y = -1;
                 break;
             case "s":
             case "ArrowDown":
-                this.x = 0;
-                this.y = 1;
+                this.movement.x = 0;
+                this.movement.y = 1;
                 break;
             /* default: can be ignored */
         }
@@ -54,13 +54,13 @@ class MovementKeyboard extends Movement {
                 case "ArrowLeft":
                 case "d":
                 case "ArrowRight":
-                    this.x = 0;
+                    this.movement.x = 0;
                     break;
                 case "w":
                 case "ArrowUp":
                 case "s":
                 case "ArrowDown":
-                    this.y = 0;
+                    this.movement.y = 0;
                     break;
                 /* default: can be ignored */
             }
@@ -71,8 +71,6 @@ class MovementKeyboard extends Movement {
 class MovementButtons extends Movement {
     constructor(movement = { x: 0, y: 0 }) {
         super();
-        this.x = movement.x;
-        this.y = movement.y;
         this.movement = movement;
         this.group = this.createDirectionalButtons();
     }
@@ -89,7 +87,7 @@ class MovementButtons extends Movement {
             { direction: "right", content: "►" },
             { direction: "down", content: "▼" }
         ]
-        buttons.forEach((button) => this.createButtonDOMElement(button, buttonGroup));
+        buttons.forEach(button => this.createButtonDOMElement(button, buttonGroup));
 
         return buttonGroup;
     }
